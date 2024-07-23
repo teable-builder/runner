@@ -1,9 +1,7 @@
-name: Build from Private Repo
+name: Build teable cloud
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-push:
