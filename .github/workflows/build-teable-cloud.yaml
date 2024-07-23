@@ -2,6 +2,8 @@ name: Build teable cloud
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [private_repo_updated]
 
 jobs:
   build-push:
