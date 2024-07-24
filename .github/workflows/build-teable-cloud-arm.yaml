@@ -1,4 +1,4 @@
-name: Build teable cloud
+name: Build teable cloud Arm
 
 on:
   workflow_dispatch:

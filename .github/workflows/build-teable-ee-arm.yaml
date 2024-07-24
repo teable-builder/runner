@@ -1,4 +1,4 @@
-name: Build teable EE
+name: Build teable EE Arm
 
 on:
   workflow_dispatch:
