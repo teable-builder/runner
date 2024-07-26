@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-push:
-    runs-on: linux-amd
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -75,5 +75,5 @@ jobs:
               --build-arg="ENABLE_CSP=false" \
               --build-arg="NEXT_BUILD_ENV_EDITION=CLOUD" \
               --tag="${{ steps.meta.outputs.tags }}" \
-              --platforms="linux/amd64,linux/arm64" \
+              --platforms="linux/amd64" \
               --push
