@@ -1,7 +1,6 @@
 name: Build teable EE
 
 on:
-  push:
   workflow_dispatch:
   repository_dispatch:
     types: [build-ee]
