@@ -4,7 +4,7 @@ on:
   push:
   workflow_dispatch:
   repository_dispatch:
-    types: [private_repo_updated]
+    types: [build-ee]
 
 jobs:
   build-push:
