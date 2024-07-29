@@ -28,6 +28,10 @@ jobs:
           token: ${{ secrets.PACKAGES_KEY }}
           submodules: 'true'
 
+      - name: Get teable-ee SHA
+        id: get_sha
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Login to GitHub container registry
         uses: docker/login-action@v3
         with:
@@ -64,6 +68,7 @@ jobs:
             docker.io/teableio/${{ matrix.image }}
           tags: |
             type=raw,value=latest
+            type=raw,value=${{ steps.get_sha.outputs.sha }}
       - name: ⚙️ Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: ⚙️ Set up Docker Buildx
