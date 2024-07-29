@@ -96,19 +96,44 @@ jobs:
       id: get_sha
       run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Run database migration
+    - name: Create migration job
       uses: actions-hub/kubectl@master
       env:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       with:
-        args: create job --from=cronjob/teable-migration teable-migration-${{ steps.get_sha.outputs.sha }}
-
-    - name: Update migration job image
-      uses: actions-hub/kubectl@master
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      with:
-        args: set image job/teable-migration-${{ steps.get_sha.outputs.sha }} teable=registry.cn-shenzhen.aliyuncs.com/teable/teable-db-migrate-cloud:${{ steps.get_sha.outputs.sha }}
+        args: |
+          apply -f - <<EOF
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: teable-migration-${{ steps.get_sha.outputs.sha }}
+            labels:
+              cloud.sealos.io/deploy-on-sealos: teable
+          spec:
+            completions: 1
+            template:
+              metadata:
+                name: teable-cloud-teable
+              spec:
+                restartPolicy: Never
+                imagePullSecrets:
+                  - name: teable
+                containers:
+                  - name: teable
+                    image: "registry.cn-shenzhen.aliyuncs.com/teable/teable-db-migrate-cloud:${{ steps.get_sha.outputs.sha }}"
+                    imagePullPolicy: Always
+                    env:
+                      - name: "PRISMA_DATABASE_URL"
+                        value: "${{ secrets.PRISMA_DATABASE_URL }}"
+                    resources:
+                      limits:
+                        memory: 512Mi
+                        cpu: 500m
+                      requests:
+                        cpu: 100m
+            backoffLimit: 0
+            ttlSecondsAfterFinished: 300
+          EOF
 
     - name: Wait for migration job to complete
       uses: actions-hub/kubectl@master
@@ -137,11 +162,3 @@ jobs:
         KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       with:
         args: rollout status deployment/teable
-
-    - name: Clean up migration job
-      if: always()
-      uses: actions-hub/kubectl@master
-      env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      with:
-        args: delete job teable-migration-${{ steps.get_sha.outputs.sha }} --ignore-not-found
